@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Cadastro - To-Do List{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8 col-lg-6">
+    <div class="card shadow">
+      <div class="card-header bg-primary text-white">
+        <h4 class="mb-0"><i class="bi bi-person-plus"></i> Criar Conta</h4>
+      </div>
+      <div class="card-body">
+        {% if messages %}
+        <div class="mb-3">
+          {% for message in messages %}
+          <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        
+        <form method="post">
+          {% csrf_token %}
+          
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="first_name" class="form-label">Nome *</label>
+              <input type="text" name="first_name" id="first_name" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+              <label for="last_name" class="form-label">Sobrenome *</label>
+              <input type="text" name="last_name" id="last_name" class="form-control" required>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="username" class="form-label">Nome de usuário *</label>
+            <input type="text" name="username" id="username" class="form-control" required>
+          </div>
+          
+          <div class="mb-3">
+            <label for="email" class="form-label">Email *</label>
+            <input type="email" name="email" id="email" class="form-control" required>
+          </div>
+          
+          <div class="mb-3">
+            <label for="password" class="form-label">Senha *</label>
+            <input type="password" name="password" id="password" class="form-control" required>
+          </div>
+          
+          <div class="mb-3">
+            <label for="password_confirm" class="form-label">Confirmar Senha *</label>
+            <input type="password" name="password_confirm" id="password_confirm" class="form-control" required>
+          </div>
+          
+          <div class="alert alert-info">
+            <h6><i class="bi bi-info-circle"></i> Requisitos da senha:</h6>
+            <ul class="mb-0">
+              <li>Mínimo 8 caracteres</li>
+              <li>Letras maiúsculas e minúsculas</li>
+              <li>Pelo menos um número</li>
+              <li>Pelo menos um caractere especial (@, #, $, etc.)</li>
+            </ul>
+          </div>
+          
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-person-plus"></i> Cadastrar
+            </button>
+            <a href="{% url 'login' %}" class="btn btn-outline-primary">
+              <i class="bi bi-arrow-left"></i> Voltar para login
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
