@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Login - To-Do List{% endblock %}
+{% block title %}To-Do List - Login{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -10,16 +10,7 @@
                 <h4 class="mb-0"><i class="bi bi-box-arrow-in-right"></i> Login</h4>
             </div>
             <div class="card-body">
-                {% if messages %}
-                <div class="mb-3">
-                    {% for message in messages %}
-                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
+                <!-- NÃO EXIBA MENSAGENS AQUI - já são exibidas no base.html -->
                 
                 <form method="post">
                     {% csrf_token %}
@@ -32,7 +23,12 @@
                     
                     <div class="mb-3">
                         <label for="password" class="form-label">Senha</label>
-                        <input type="password" name="password" id="password" class="form-control" required>
+                        <div class="input-group">
+                            <input type="password" name="password" id="password" class="form-control" required>
+                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
                         <div class="form-text">Sua senha de acesso</div>
                     </div>
                     
@@ -53,8 +49,28 @@
     </div>
 </div>
 
-<!-- Adicione um script para debug -->
 <script>
-console.log("Página de login carregada");
+// Função para mostrar/esconder senha
+document.getElementById('togglePassword')?.addEventListener('click', function() {
+    const passwordInput = document.getElementById('password');
+    const icon = this.querySelector('i');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.classList.remove('bi-eye');
+        icon.classList.add('bi-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        icon.classList.remove('bi-eye-slash');
+        icon.classList.add('bi-eye');
+    }
+});
 </script>
+
+<style>
+.input-group button {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+</style>
 {% endblock %}

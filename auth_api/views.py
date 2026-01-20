@@ -2,8 +2,8 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.views import View
 from .services import APIService
-from .forms import RegisterForm, LoginForm
-
+from django.http import JsonResponse
+from tasks.models import Task
 
 class RegisterView(View):
     def get(self, request):
@@ -15,22 +15,11 @@ class RegisterView(View):
         email = request.POST.get("email")
         password = request.POST.get("password")
         password_confirm = request.POST.get("password_confirm")
-        first_name = request.POST.get("first_name")
-        last_name = request.POST.get("last_name")
-
-        print(f"🔍 DEBUG - Dados do request.POST:")
-        print(f"  first_name: '{first_name}'")
-        print(f"  last_name: '{last_name}'")
-        print(f"  username: '{username}'")
-        print(f"  email: '{email}'")
-        print(f"  Todos os campos POST: {dict(request.POST)}")
 
         # Validação básica no cliente
         errors = []
 
-        if not all(
-            [username, email, password, password_confirm, first_name, last_name]
-        ):
+        if not all([username, email, password, password_confirm]):
             errors.append("Todos os campos são obrigatórios")
 
         if password != password_confirm:
@@ -49,8 +38,6 @@ class RegisterView(View):
             "username": username,
             "email": email,
             "password": password,
-            "first_name": first_name,
-            "last_name": last_name,
         }
 
         # Chamar API
@@ -59,14 +46,14 @@ class RegisterView(View):
         if response:
             if response.status_code == 201:
                 messages.success(
-                    request, "✅ Conta criada com sucesso! Faça login para continuar."
+                    request, "Conta criada com sucesso! Faça login para continuar."
                 )
                 return redirect("login")
             else:
                 # Tratar erros da API
                 try:
                     error_data = response.json()
-                    print(f"📥 Erro da API: {error_data}")
+                    print(f"Erro da API: {error_data}")
 
                     if "email" in error_data:
                         messages.error(request, f"Email: {error_data['email'][0]}")
@@ -86,7 +73,7 @@ class RegisterView(View):
                         request, f"Erro ao processar resposta da API: {str(e)}"
                     )
         else:
-            messages.error(request, "❌ Erro de conexão com o servidor de autenticação")
+            messages.error(request, "Erro de conexão com o servidor de autenticação")
 
         return render(request, "auth/register.html")
 
@@ -116,7 +103,6 @@ class LoginView(View):
             if response.status_code == 200:
                 try:
                     data = response.json()
-                    print(f"✅ Login bem-sucedido! Dados recebidos: {data.keys()}")
 
                     # Extrair tokens
                     access_token = data.get("access")
@@ -132,24 +118,17 @@ class LoginView(View):
                     request.session["access_token"] = access_token
                     request.session["refresh_token"] = refresh_token
 
-                    # IMPORTANTE: A API não retorna user_id na resposta de login?
-                    # Vamos buscar usando o token
-                    print(f"🔍 Buscando informações do usuário com token...")
-
-                    # Primeiro, vamos tentar obter a lista de usuários
+                    # Buscar informações do usuário
                     user_response = APIService.get_user_profile(access_token)
 
                     if user_response and user_response.status_code == 200:
                         user_info = user_response.json()
-                        print(f"📊 Informações do usuário recebidas: {type(user_info)}")
 
                         # A API retorna uma lista de usuários
                         if isinstance(user_info, list):
-                            print(f"📋 Lista com {len(user_info)} usuários")
                             # Procurar o usuário pelo email
                             user_found = None
                             for user in user_info:
-                                print(f"  👤 Usuário: {user.get('email')}")
                                 if user.get("email") == email:
                                     user_found = user
                                     break
@@ -161,30 +140,19 @@ class LoginView(View):
                                     "id": user_id,
                                     "username": user_found.get("username"),
                                     "email": user_found.get("email"),
-                                    "first_name": user_found.get("first_name"),
-                                    "last_name": user_found.get("last_name"),
                                 }
-                                print(f"✅ Usuário encontrado: ID {user_id}")
                             else:
-                                print(
-                                    f"❌ Usuário com email {email} não encontrado na lista"
-                                )
                                 # Se não encontrou, usar um ID temporário
                                 request.session["user_id"] = "temp_id"
                                 request.session["user_data"] = {
                                     "email": email,
-                                    "first_name": "Usuário",
                                 }
                         else:
-                            print(f"⚠️ Resposta inesperada: {user_info}")
                             messages.error(
                                 request, "Formato de resposta inesperado da API"
                             )
                             return render(request, "auth/login.html")
                     else:
-                        print(
-                            f"❌ Erro ao buscar perfil: {user_response.status_code if user_response else 'No response'}"
-                        )
                         # Mesmo sem perfil, podemos continuar com os tokens
                         request.session["user_id"] = "unknown"
                         request.session["user_data"] = {
@@ -192,14 +160,10 @@ class LoginView(View):
                         }
 
                     messages.success(request, "Login realizado com sucesso!")
-                    print(f"🎉 Redirecionando para task_list...")
                     return redirect("task_list")
 
                 except Exception as e:
-                    print(f"❌ Erro ao processar resposta: {e}")
-                    import traceback
-
-                    traceback.print_exc()
+                    print(f"Erro ao processar resposta: {e}")
                     messages.error(request, f"Erro ao processar resposta: {str(e)}")
             else:
                 # Erro de login
@@ -226,58 +190,159 @@ class LogoutView(View):
 class ProfileView(View):
     def get(self, request):
         if "access_token" not in request.session:
+            messages.error(request, "Faça login para acessar seu perfil")
             return redirect("login")
 
         access_token = request.session.get("access_token")
         user_id = request.session.get("user_id")
 
+        # Buscar dados do usuário na API
         response = APIService.get_user_profile(access_token, user_id)
 
         if response and response.status_code == 200:
             user_data = response.json()
-            return render(request, "auth/profile.html", {"user_data": user_data})
+            
+            # Buscar estatísticas de tarefas
+            if user_id and user_id not in ["temp_id", "unknown"]:
+                try:
+                    user_tasks = Task.objects.filter(user_id=user_id)
+                    total_tasks = user_tasks.count()
+                    pending_tasks = user_tasks.filter(status='pendente').count()
+                    completed_tasks = user_tasks.filter(status='concluida').count()
+                    in_progress_tasks = user_tasks.filter(status='em_progresso').count()
+                except:
+                    total_tasks = pending_tasks = completed_tasks = in_progress_tasks = 0
+            else:
+                total_tasks = pending_tasks = completed_tasks = in_progress_tasks = 0
+
+            context = {
+                "user_data": user_data,
+                "total_tasks": total_tasks,
+                "pending_tasks": pending_tasks,
+                "completed_tasks": completed_tasks,
+                "in_progress_tasks": in_progress_tasks,
+            }
+            
+            return render(request, "auth/profile.html", context)
 
         messages.error(request, "Erro ao carregar perfil")
         return redirect("task_list")
 
 
-class SessionDebugView(View):
-    def get(self, request):
+class UpdateProfileView(View):
+    def post(self, request):
         if "access_token" not in request.session:
+            messages.error(request, "Faça login para atualizar seu perfil")
             return redirect("login")
 
-        # Tentar buscar dados do usuário da API
+        # Coletar dados do formulário
+        username = request.POST.get("username")
+        email = request.POST.get("email")
+        user_id = request.session.get("user_id")
         access_token = request.session.get("access_token")
-        user_response = APIService.get_user_profile(access_token)
 
-        session_data = {
-            "access_token_exists": "access_token" in request.session,
-            "access_token_length": (
-                len(request.session.get("access_token", ""))
-                if "access_token" in request.session
-                else 0
-            ),
-            "refresh_token_exists": "refresh_token" in request.session,
-            "user_id": request.session.get("user_id"),
-            "user_data": request.session.get("user_data", {}),
+        # Validar dados
+        if not all([username, email]):
+            messages.error(request, "Todos os campos são obrigatórios")
+            return redirect("profile")
+
+        # Preparar dados para API
+        user_data = {
+            "username": username,
+            "email": email,
         }
 
-        api_data = None
-        if user_response:
-            api_data = {
-                "status_code": user_response.status_code,
-                "response": (
-                    user_response.json()
-                    if user_response.status_code == 200
-                    else user_response.text
-                ),
-            }
+        # Atualizar via API
+        response = APIService.update_user(access_token, user_id, user_data)
 
-        return render(
-            request,
-            "auth/debug_session.html",
-            {
-                "session_data": session_data,
-                "api_data": api_data,
-            },
-        )
+        if response:
+            if response.status_code == 200:
+                # Atualizar dados na sessão
+                request.session["user_data"] = {
+                    "id": user_id,
+                    "username": username,
+                    "email": email,
+                }
+                
+                messages.success(request, "Perfil atualizado com sucesso!")
+            else:
+                try:
+                    error_data = response.json()
+                    error_msg = "Erro ao atualizar perfil"
+                    if "detail" in error_data:
+                        error_msg = error_data["detail"]
+                    elif "email" in error_data:
+                        error_msg = f"Email: {error_data['email'][0]}"
+                    elif "username" in error_data:
+                        error_msg = f"Usuário: {error_data['username'][0]}"
+                    
+                    messages.error(request, f"{error_msg}")
+                except:
+                    messages.error(request, "Erro ao atualizar perfil")
+        else:
+            messages.error(request, "Erro de conexão com a API")
+
+        return redirect("profile")
+
+
+class ChangePasswordView(View):
+    def post(self, request):
+        if "access_token" not in request.session:
+            messages.error(request, "Faça login para alterar sua senha")
+            return redirect("login")
+
+        current_password = request.POST.get("current_password")
+        new_password = request.POST.get("new_password")
+        confirm_password = request.POST.get("confirm_password")
+
+        # Validar
+        if not all([current_password, new_password, confirm_password]):
+            messages.error(request, "Todos os campos são obrigatórios")
+            return redirect("profile")
+
+        if new_password != confirm_password:
+            messages.error(request, "As novas senhas não coincidem")
+            return redirect("profile")
+
+        if len(new_password) < 8:
+            messages.error(request, "A nova senha deve ter pelo menos 8 caracteres")
+            return redirect("profile")
+
+        # Nota: Verifique se a API tem endpoint para alterar senha
+        messages.info(request, "Alteração de senha via API ainda não implementada.")
+        return redirect("profile")
+
+
+class DeleteAccountView(View):
+    def post(self, request):
+        if "access_token" not in request.session:
+            messages.error(request, "Faça login para excluir sua conta")
+            return redirect("login")
+
+        confirm_email = request.POST.get("confirm_email")
+        user_email = request.session.get("user_data", {}).get("email")
+        user_id = request.session.get("user_id")
+        access_token = request.session.get("access_token")
+
+        # Confirmar email
+        if confirm_email != user_email:
+            messages.error(request, "O email não corresponde ao da sua conta")
+            return redirect("profile")
+
+        # Excluir conta via API
+        response = APIService.delete_user(access_token, user_id)
+
+        if response and response.status_code == 204:
+            # Limpar sessão e excluir tarefas locais
+            if user_id and user_id not in ["temp_id", "unknown"]:
+                try:
+                    Task.objects.filter(user_id=user_id).delete()
+                except:
+                    pass
+            request.session.flush()
+            
+            messages.success(request, "Sua conta foi excluída com sucesso!")
+            return redirect("login")
+        else:
+            messages.error(request, "Erro ao excluir conta")
+            return redirect("profile")

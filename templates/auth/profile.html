@@ -1,0 +1,416 @@
+{% extends 'base.html' %}
+
+{% block title %}To-Do List - Meu Perfil{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <!-- Cabeçalho do Perfil -->
+            <div class="card mb-4 shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-person-circle"></i> Meu Perfil</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Avatar e Ações Rápidas -->
+                        <div class="col-md-4 text-center mb-4">
+                            <div class="mb-4">
+                                <div class="avatar-circle bg-primary text-white d-inline-flex align-items-center justify-content-center rounded-circle mb-3" 
+                                     style="width: 120px; height: 120px; font-size: 3rem; font-weight: bold;">
+                                    {{ user_data.username|first|upper }}
+                                </div>
+                                <h5>{{ user_data.username }}</h5>
+                                <!-- REMOVI AQUI: <p class="text-muted">{{ user_data.email }}</p> -->
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                                    <i class="bi bi-pencil"></i> Editar Perfil
+                                </button>
+                                <button class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                                    <i class="bi bi-key"></i> Alterar Senha
+                                </button>
+                                <a href="{% url 'task_list' %}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left"></i> Voltar para Tarefas
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <!-- Informações Detalhadas -->
+                        <div class="col-md-8">
+                            <div class="row">
+                                <!-- Informações Pessoais -->
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-header">
+                                            <h6 class="mb-0"><i class="bi bi-person-vcard"></i> Informações Pessoais</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <table class="table table-sm">
+                                                <tr>
+                                                    <th><i class="bi bi-at"></i> Username:</th>
+                                                    <td>
+                                                        {{ user_data.username }}
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <th><i class="bi bi-envelope"></i> Email:</th>
+                                                    <td>{{ user_data.email }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th><i class="bi bi-calendar"></i> Cadastrado em:</th>
+                                                    <td>
+                                                        {% if user_data.date_joined %}
+                                                            {{ user_data.date_joined|date:"d/m/Y" }}
+                                                        {% else %}
+                                                            <span class="text-muted">Data não disponível</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Status da Conta -->
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-header">
+                                            <h6 class="mb-0"><i class="bi bi-shield-check"></i> Status da Conta</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <table class="table table-sm">
+                                                <tr>
+                                                    <th>Status:</th>
+                                                    <td>
+                                                        <span class="badge bg-success">Ativo</span>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Staff:</th>
+                                                    <td>
+                                                        {% if user_data.is_staff %}
+                                                        <span class="badge bg-warning">Staff</span>
+                                                        {% else %}
+                                                        <span class="badge bg-secondary">Usuário</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <th>ID do Usuário:</th>
+                                                    <td>{{ user_data.id }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Último acesso:</th>
+                                                    <td>
+                                                        {% now "d/m/Y H:i" %}
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Estatísticas -->
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h6 class="mb-0"><i class="bi bi-bar-chart"></i> Minhas Estatísticas</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row text-center">
+                                        <div class="col-md-3 mb-3">
+                                            <div class="p-3 bg-primary bg-opacity-10 rounded border border-primary">
+                                                <h3 class="text-primary">{{ total_tasks }}</h3>
+                                                <p class="mb-0">Total de Tarefas</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <div class="p-3 bg-warning bg-opacity-10 rounded border border-warning">
+                                                <h3 class="text-warning">{{ pending_tasks }}</h3>
+                                                <p class="mb-0">Pendentes</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <div class="p-3 bg-success bg-opacity-10 rounded border border-success">
+                                                <h3 class="text-success">{{ completed_tasks }}</h3>
+                                                <p class="mb-0">Concluídas</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <div class="p-3 bg-info bg-opacity-10 rounded border border-info">
+                                                <h3 class="text-info">{{ in_progress_tasks }}</h3>
+                                                <p class="mb-0">Em Progresso</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Ações Perigosas -->
+                    <div class="card border-danger">
+                        <div class="card-header bg-danger text-white">
+                            <h6 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Ações Perigosas</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h6>Excluir Minha Conta</h6>
+                                    <p class="text-muted mb-0">Esta ação é irreversível. Todas as suas tarefas e dados serão permanentemente excluídos.</p>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                                        <i class="bi bi-trash"></i> Excluir Conta
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Editar Perfil -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="editProfileModalLabel">
+                    <i class="bi bi-pencil"></i> Editar Perfil
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'update_profile' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="edit_username" class="form-label">Nome de usuário *</label>
+                        <div class="input-group">
+                            <span class="input-group-text">@</span>
+                            <input type="text" class="form-control" id="edit_username" name="username" 
+                                   value="{{ user_data.username }}" required>
+                        </div>
+                        <div class="form-text">Usado para login e identificação</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="edit_email" class="form-label">Email *</label>
+                        <input type="email" class="form-control" id="edit_email" name="email" 
+                               value="{{ user_data.email }}" required>
+                        <div class="form-text">Seu endereço de email</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Alterar Senha -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title" id="changePasswordModalLabel">
+                    <i class="bi bi-key"></i> Alterar Senha
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'change_password' %}" id="passwordForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="current_password" class="form-label">Senha Atual *</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="current_password" name="current_password" required>
+                            <button class="btn btn-outline-secondary" type="button" id="toggleCurrentPassword">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="new_password" class="form-label">Nova Senha *</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="new_password" name="new_password" required>
+                            <button class="btn btn-outline-secondary" type="button" id="toggleNewPassword">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <div class="form-text">Mínimo 8 caracteres</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label">Confirmar Nova Senha *</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                            <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h6><i class="bi bi-shield-check"></i> Requisitos de Segurança</h6>
+                        <ul class="mb-0 small">
+                            <li>Pelo menos 8 caracteres</li>
+                            <li>Letras maiúsculas e minúsculas</li>
+                            <li>Pelo menos um número</li>
+                            <li>Pelo menos um caractere especial</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning">Alterar Senha</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Excluir Conta -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteAccountModalLabel">
+                    <i class="bi bi-exclamation-triangle"></i> Confirmar Exclusão
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'delete_account' %}" id="deleteAccountForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="alert alert-danger">
+                        <h6><i class="bi bi-exclamation-triangle-fill"></i> Atenção!</h6>
+                        <p class="mb-0">Esta ação é irreversível. Você perderá:</p>
+                        <ul class="mb-0">
+                            <li>Todos os seus dados pessoais</li>
+                            <li>Todas as suas tarefas ({{ total_tasks }})</li>
+                            <li>Acesso permanente à conta</li>
+                        </ul>
+                    </div>
+                    
+                    <p>Para confirmar, digite seu email: <strong>{{ user_data.email }}</strong></p>
+                    
+                    <div class="mb-3">
+                        <label for="confirm_email" class="form-label">Digite seu email:</label>
+                        <input type="email" class="form-control" id="confirm_email" name="confirm_email" 
+                               placeholder="{{ user_data.email }}" required>
+                    </div>
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="confirm_delete" required>
+                        <label class="form-check-label" for="confirm_delete">
+                            Eu entendo que esta ação não pode ser desfeita
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger" id="deleteButton" disabled>
+                        <i class="bi bi-trash"></i> Excluir Minha Conta
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-circle {
+    background: linear-gradient(135deg, #0d6efd, #0dcaf0);
+    box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);
+}
+.card {
+    border: 1px solid rgba(0,0,0,.125);
+    border-radius: 10px;
+}
+.card-header {
+    border-radius: 9px 9px 0 0 !important;
+}
+.table th {
+    width: 40%;
+    font-weight: 500;
+}
+</style>
+
+<script>
+// Validação do formulário de senha
+document.getElementById('passwordForm')?.addEventListener('submit', function(e) {
+    const newPassword = document.getElementById('new_password').value;
+    const confirmPassword = document.getElementById('confirm_password').value;
+    
+    if (newPassword !== confirmPassword) {
+        e.preventDefault();
+        alert('As senhas não coincidem!');
+        return false;
+    }
+    
+    if (newPassword.length < 8) {
+        e.preventDefault();
+        alert('A senha deve ter pelo menos 8 caracteres!');
+        return false;
+    }
+    
+    return true;
+});
+
+// Validação da exclusão de conta
+const confirmEmailInput = document.getElementById('confirm_email');
+const confirmCheckbox = document.getElementById('confirm_delete');
+const deleteButton = document.getElementById('deleteButton');
+
+if (confirmEmailInput && confirmCheckbox && deleteButton) {
+    function validateDelete() {
+        const email = confirmEmailInput.value;
+        const correctEmail = '{{ user_data.email }}';
+        const isChecked = confirmCheckbox.checked;
+        
+        deleteButton.disabled = !(email === correctEmail && isChecked);
+    }
+    
+    confirmEmailInput.addEventListener('input', validateDelete);
+    confirmCheckbox.addEventListener('change', validateDelete);
+}
+
+// Função para mostrar/esconder senha
+function togglePassword(inputId, buttonId) {
+    const passwordInput = document.getElementById(inputId);
+    const toggleButton = document.getElementById(buttonId);
+    const icon = toggleButton.querySelector('i');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.classList.remove('bi-eye');
+        icon.classList.add('bi-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        icon.classList.remove('bi-eye-slash');
+        icon.classList.add('bi-eye');
+    }
+}
+
+// Adicionar eventos aos botões de mostrar/esconder senha
+document.getElementById('toggleCurrentPassword')?.addEventListener('click', function() {
+    togglePassword('current_password', 'toggleCurrentPassword');
+});
+
+document.getElementById('toggleNewPassword')?.addEventListener('click', function() {
+    togglePassword('new_password', 'toggleNewPassword');
+});
+
+document.getElementById('toggleConfirmPassword')?.addEventListener('click', function() {
+    togglePassword('confirm_password', 'toggleConfirmPassword');
+});
+</script>
+{% endblock %}

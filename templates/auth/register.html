@@ -1,7 +1,4 @@
-{% extends 'base.html' %}
-
-{% block title %}Cadastro - To-Do List{% endblock %}
-
+{% extends 'base.html' %} {% block title %}To-Do List - Cadastro{% endblock %}
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-md-8 col-lg-6">
@@ -13,48 +10,88 @@
         {% if messages %}
         <div class="mb-3">
           {% for message in messages %}
-          <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
+          <div
+            class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show"
+            role="alert"
+          >
             {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="alert"
+            ></button>
           </div>
           {% endfor %}
         </div>
         {% endif %}
-        
+
         <form method="post">
           {% csrf_token %}
-          
-          <div class="row mb-3">
-            <div class="col-md-6">
-              <label for="first_name" class="form-label">Nome *</label>
-              <input type="text" name="first_name" id="first_name" class="form-control" required>
-            </div>
-            <div class="col-md-6">
-              <label for="last_name" class="form-label">Sobrenome *</label>
-              <input type="text" name="last_name" id="last_name" class="form-control" required>
-            </div>
-          </div>
-          
+
           <div class="mb-3">
             <label for="username" class="form-label">Nome de usuário *</label>
-            <input type="text" name="username" id="username" class="form-control" required>
+            <input
+              type="text"
+              name="username"
+              id="username"
+              class="form-control"
+              required
+            />
           </div>
-          
+
           <div class="mb-3">
             <label for="email" class="form-label">Email *</label>
-            <input type="email" name="email" id="email" class="form-control" required>
+            <input
+              type="email"
+              name="email"
+              id="email"
+              class="form-control"
+              required
+            />
           </div>
-          
+
           <div class="mb-3">
             <label for="password" class="form-label">Senha *</label>
-            <input type="password" name="password" id="password" class="form-control" required>
+            <div class="input-group">
+              <input
+                type="password"
+                name="password"
+                id="password"
+                class="form-control"
+                required
+              />
+              <button
+                class="btn btn-outline-secondary"
+                type="button"
+                id="togglePassword"
+              >
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
           </div>
-          
+
           <div class="mb-3">
-            <label for="password_confirm" class="form-label">Confirmar Senha *</label>
-            <input type="password" name="password_confirm" id="password_confirm" class="form-control" required>
+            <label for="password_confirm" class="form-label"
+              >Confirmar Senha *</label
+            >
+            <div class="input-group">
+              <input
+                type="password"
+                name="password_confirm"
+                id="password_confirm"
+                class="form-control"
+                required
+              />
+              <button
+                class="btn btn-outline-secondary"
+                type="button"
+                id="togglePasswordConfirm"
+              >
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
           </div>
-          
+
           <div class="alert alert-info">
             <h6><i class="bi bi-info-circle"></i> Requisitos da senha:</h6>
             <ul class="mb-0">
@@ -64,13 +101,19 @@
               <li>Pelo menos um caractere especial (@, #, $, etc.)</li>
             </ul>
           </div>
-          
-          <div class="d-grid gap-2">
+
+          <div class="d-grid gap-2 mb-3">
             <button type="submit" class="btn btn-primary">
-              <i class="bi bi-person-plus"></i> Cadastrar
+              <i class="bi bi-person-plus"></i> Criar Conta
             </button>
-            <a href="{% url 'login' %}" class="btn btn-outline-primary">
-              <i class="bi bi-arrow-left"></i> Voltar para login
+          </div>
+
+          <div class="text-center">
+            <a
+              href="{% url 'login' %}"
+              class="btn btn-outline-secondary btn-sm"
+            >
+              <i class="bi bi-arrow-left"></i> Já tenho uma conta
             </a>
           </div>
         </form>
@@ -78,4 +121,63 @@
     </div>
   </div>
 </div>
+
+<script>
+  // Função para mostrar/esconder senha
+  function togglePassword(inputId, buttonId) {
+    const passwordInput = document.getElementById(inputId);
+    const toggleButton = document.getElementById(buttonId);
+    const icon = toggleButton.querySelector("i");
+
+    if (passwordInput.type === "password") {
+      passwordInput.type = "text";
+      icon.classList.remove("bi-eye");
+      icon.classList.add("bi-eye-slash");
+    } else {
+      passwordInput.type = "password";
+      icon.classList.remove("bi-eye-slash");
+      icon.classList.add("bi-eye");
+    }
+  }
+
+  // Adicionar eventos aos botões
+  document
+    .getElementById("togglePassword")
+    ?.addEventListener("click", function () {
+      togglePassword("password", "togglePassword");
+    });
+
+  document
+    .getElementById("togglePasswordConfirm")
+    ?.addEventListener("click", function () {
+      togglePassword("password_confirm", "togglePasswordConfirm");
+    });
+
+  // Validação do formulário
+  document.querySelector("form")?.addEventListener("submit", function (e) {
+    const password = document.getElementById("password").value;
+    const passwordConfirm = document.getElementById("password_confirm").value;
+
+    if (password !== passwordConfirm) {
+      e.preventDefault();
+      alert("As senhas não coincidem!");
+      return false;
+    }
+
+    if (password.length < 8) {
+      e.preventDefault();
+      alert("A senha deve ter pelo menos 8 caracteres!");
+      return false;
+    }
+
+    return true;
+  });
+</script>
+
+<style>
+  .input-group button {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+</style>
 {% endblock %}
