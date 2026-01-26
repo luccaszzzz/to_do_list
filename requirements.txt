@@ -2,9 +2,11 @@ asgiref==3.10.0
 asttokens==3.0.0
 colorama==0.4.6
 comm==0.2.3
+crispy-bootstrap5==2025.6
 debugpy==1.8.17
 decorator==5.2.1
 Django==5.2.7
+django-crispy-forms==2.5
 django-widget-tweaks==1.5.0
 djangorestframework==3.16.1
 executing==2.2.1
