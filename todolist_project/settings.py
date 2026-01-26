@@ -53,6 +53,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'todolist_project.wsgi.application'
 
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -95,3 +96,7 @@ API_BASE_URL = 'https://usuarioapi-production.up.railway.app/'
 # Configurações de sessão
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_AGE = 86400  # 24 horas
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://todolist-production-a010.up.railway.app',
+]
