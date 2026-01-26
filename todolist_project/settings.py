@@ -7,7 +7,7 @@ SECRET_KEY = 'django-insecure-6e6&%f7cy76y2@bx#ah(lez%&#9s*p5p!qej(_4^4dj0@ol!b%
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['todolist-production-a010.up.railway.app', 'localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -16,7 +16,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Apps criados
     'auth_api',
     'tasks',
     # Third party
