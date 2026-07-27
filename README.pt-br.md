@@ -138,9 +138,10 @@ Acesse em `http://127.0.0.1:8000/`
 
 ---
 
-## Autor
+## Autores
 
-Desenvolvido por Lucas Emanoel da Silva Freitas
+- Lucas Emanoel da Silva Freitas
+- Júlia Galvão
 
 ---
 

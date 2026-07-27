@@ -138,10 +138,9 @@ Access at `http://127.0.0.1:8000/`
 
 ---
 
-## Author
+## Authors
 
-Developed by Lucas Emanoel da Silva Freitas
-
----
+- Lucas Emanoel da Silva Freitas
+- Júlia Galvão
 
 [Leia em Português](README.pt-br.md)
