@@ -7,7 +7,7 @@ SECRET_KEY = 'django-insecure-6e6&%f7cy76y2@bx#ah(lez%&#9s*p5p!qej(_4^4dj0@ol!b%
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['todolist-production-a010.up.railway.app', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '::1']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -90,13 +90,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
-# URL da API externa
-API_BASE_URL = 'https://usuarioapi-production.up.railway.app/'
+# URL da API externa (opcional; o projeto agora funciona localmente sem ela)
+API_BASE_URL = os.getenv('API_BASE_URL', 'http://localhost:8000/')
 
 # Configurações de sessão
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_AGE = 86400  # 24 horas
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://todolist-production-a010.up.railway.app',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
 ]
